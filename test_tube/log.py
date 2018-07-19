@@ -58,33 +58,37 @@ class Experiment(object):
         self.__init_cache_file_if_needed()
 
         # create a new log file if not in debug mode
-        if not debug:
+        if debug:
+            return
 
-            # when we have a version, load it
-            if self.version is not None:
+        # when we have a version, load it
+        if self.version is not None:
 
-                # when no version and no file, create it
-                if not os.path.exists(self.__get_log_name()):
-                    self.__create_exp_file(self.version)
-                    self.save()
-                else:
-                    # otherwise load it
-                    self.__load()
-            else:
-                # if no version given, increase the version to a new exp
-                # create the file if not exists
-                old_version = self.__get_last_experiment_version()
-                self.version = old_version
-                self.__create_exp_file(self.version + 1)
+            # when no version and no file, create it
+            if not os.path.exists(self.__get_log_name()):
+                self.__create_exp_file(self.version)
                 self.save()
+            else:
+                # otherwise load it
+                self.__load()
+        else:
+            # if no version given, increase the version to a new exp
+            # create the file if not exists
+            old_version = self.__get_last_experiment_version()
+            self.version = old_version
+            self.__create_exp_file(self.version + 1)
+            self.save()
 
-            # create a git tag if requested
-            if self.create_git_tag == True:
-                desc = description if description is not None else 'no description'
-                tag_msg = 'Test tube exp: {} - {}'.format(self.name, desc)
-                cmd = 'git tag -a tt_{} -m "{}"'.format(self.exp_hash, tag_msg)
-                os.system(cmd)
-                print('Test tube created git tag:', 'tt_{}'.format(self.exp_hash))
+        # create a git tag if requested
+        if self.create_git_tag == True:
+            desc = description if description is not None else 'no description'
+            tag_msg = 'Test tube exp: {} - {}'.format(self.name, desc)
+            cmd_commit = 'git commit -a -m "Commit for tag tt_{}"'\
+                         ''.format(self.exp_hash)
+            os.system(cmd_commit)
+            cmd = 'git tag -a tt_{} -m "{}"'.format(self.exp_hash, tag_msg)
+            os.system(cmd)
+            print('Test tube created git tag:', 'tt_{}'.format(self.exp_hash))
 
     def argparse(self, argparser):
         parsed = vars(argparser)
